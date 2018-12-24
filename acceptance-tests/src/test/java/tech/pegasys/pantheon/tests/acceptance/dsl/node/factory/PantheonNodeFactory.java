@@ -23,6 +23,7 @@ import tech.pegasys.pantheon.ethereum.jsonrpc.JsonRpcConfiguration;
 import tech.pegasys.pantheon.ethereum.jsonrpc.RpcApi;
 import tech.pegasys.pantheon.ethereum.jsonrpc.websocket.WebSocketConfiguration;
 import tech.pegasys.pantheon.ethereum.permissioning.PermissioningConfiguration;
+import tech.pegasys.pantheon.tests.acceptance.dsl.account.Account;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.PantheonNode;
 import tech.pegasys.pantheon.tests.acceptance.dsl.node.RunnableNode;
 
@@ -67,40 +68,12 @@ public class PantheonNodeFactory {
             .build());
   }
 
-  public PantheonNode createMinerNodeWithCustomRefreshDelay(
-      final String name, final Long refreshDelay) throws IOException {
-
-    WebSocketConfiguration wsConfig = createWebSocketEnabledConfig();
-    wsConfig.setRefreshDelay(refreshDelay);
-
-    return create(
-        new PantheonFactoryConfigurationBuilder()
-            .setName(name)
-            .miningEnabled()
-            .setJsonRpcConfiguration(createJsonRpcEnabledConfig())
-            .setWebSocketConfiguration(wsConfig)
-            .build());
-  }
-
   public PantheonNode createArchiveNode(final String name) throws IOException {
     return create(
         new PantheonFactoryConfigurationBuilder()
             .setName(name)
             .jsonRpcEnabled()
             .webSocketEnabled()
-            .build());
-  }
-
-  public PantheonNode createArchiveNodeWithCustomRefreshDelay(
-      final String name, final Long refreshDelay) throws IOException {
-    WebSocketConfiguration wsConfig = createWebSocketEnabledConfig();
-    wsConfig.setRefreshDelay(refreshDelay);
-
-    return create(
-        new PantheonFactoryConfigurationBuilder()
-            .setName(name)
-            .setJsonRpcConfiguration(createJsonRpcEnabledConfig())
-            .setWebSocketConfiguration(wsConfig)
             .build());
   }
 
@@ -128,6 +101,24 @@ public class PantheonNodeFactory {
     PermissioningConfiguration permissioningConfiguration =
         PermissioningConfiguration.createDefault();
     permissioningConfiguration.setNodeWhitelist(nodesWhitelist);
+
+    return create(
+        new PantheonFactoryConfigurationBuilder()
+            .setName(name)
+            .jsonRpcEnabled()
+            .setPermissioningConfiguration(permissioningConfiguration)
+            .build());
+  }
+
+  public PantheonNode createNodeWithAccountsWhitelist(
+      final String name, final List<Account> accountsWhitelist) throws IOException {
+    Collection<String> accountsWhitelistPubKeys = new ArrayList<>();
+    for(Account account : accountsWhitelist) {
+      accountsWhitelistPubKeys.add(account.getAddress());
+    }
+    PermissioningConfiguration permissioningConfiguration =
+        PermissioningConfiguration.createDefault();
+    permissioningConfiguration.setAccountWhitelist(accountsWhitelistPubKeys);
 
     return create(
         new PantheonFactoryConfigurationBuilder()
